@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
@@ -17,29 +17,29 @@ import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import com.mongodb.MongoClientURI;
 
 @Configuration
-@PropertySources(@PropertySource("classpath:db.properties"))
+@PropertySource(value = "classpath:db.properties", ignoreResourceNotFound = true)
 public class SenseMongoConfig {
-	@Value("${DB_USERNAME}") 
+	@Value("${DB_USERNAME}")
 	String DB_USERNAME;
-	
+
 	@Value("${DB_PASSWORD}")
 	String DB_PASSWORD;
-	
+
 	@Value("${DB_NAME}")
 	String DB_NAME;
-	
+
 	@Value("${DB_HOST}")
 	String DB_HOST;
-	
+
 	@Value("${DB_PORT}")
 	String DB_PORT;
-	
+
 	@Value("${DB_PROTOCOL}")
 	String DB_PROTOCOL;
-	
+
 	@Value("${DB_AUTH_MECHANISM}")
 	String DB_AUTH_MECHANISM;
-	
+
 	@Bean
 	public MongoClientURI senseMongoUri() {
 		MongoClientURI uri = new MongoClientURI(formSenseMongoUri());
@@ -78,5 +78,10 @@ public class SenseMongoConfig {
 		mongoUri.append("authMechanism=");
 		mongoUri.append(DB_AUTH_MECHANISM);
 		return mongoUri.toString();
+	}
+
+	@Bean
+	public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
+		return new PropertySourcesPlaceholderConfigurer();
 	}
 }
