@@ -2,6 +2,7 @@ package cwf.dbhelper.sequencegenerator;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "sequence")
 public class SequenceId {
@@ -9,7 +10,8 @@ public class SequenceId {
 	@Id
 	private String id;
 
-	private long seq;
+	@Field("seq")
+	private int seq;
 
 	public String getId() {
 		return id;
@@ -19,11 +21,11 @@ public class SequenceId {
 		this.id = id;
 	}
 
-	public long getSeq() {
+	public int getSeq() {
 		return seq;
 	}
 
-	public void setSeq(long seq) {
+	public void setSeq(int seq) {
 		this.seq = seq;
 	}
 }
