@@ -76,6 +76,7 @@ public class JwtHelper {
 		try {
 			final Verifier hmacVerifier = new HmacSHA256Verifier(SIGNING_KEY.getBytes());
 			VerifierProvider hmacLocator = new VerifierProvider() {
+				@Override
 				public List<Verifier> findVerifier(String id, String key) {
 					return Lists.newArrayList(hmacVerifier);
 				}
@@ -83,6 +84,7 @@ public class JwtHelper {
 			VerifierProviders locators = new VerifierProviders();
 			locators.setVerifierProvider(SignatureAlgorithm.HS256, hmacLocator);
 			net.oauth.jsontoken.Checker checker = new net.oauth.jsontoken.Checker() {
+				@Override
 				public void check(JsonObject payload) throws SignatureException {
 				}
 			};
@@ -105,9 +107,8 @@ public class JwtHelper {
 				tokenInfo.setIssued(new DateTime(payload.getAsJsonPrimitive("iat").getAsLong()));
 				tokenInfo.setExpires(new DateTime(payload.getAsJsonPrimitive("exp").getAsLong()));
 				return tokenInfo;
-			} else {
-				return null;
 			}
+			return null;
 		} catch (InvalidKeyException e1) {
 			throw new RuntimeException(e1);
 		}
