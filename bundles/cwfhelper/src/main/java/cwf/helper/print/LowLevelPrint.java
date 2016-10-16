@@ -20,7 +20,6 @@ import cwf.helper.exception.BusinessException;
 
 @Component
 public class LowLevelPrint {
-
 	double PAGE_WIDTH = 7.0;
 	int FONT_SIZE = 10;
 	int FONT_STYLE_PLAIN = Font.PLAIN;
@@ -35,7 +34,6 @@ public class LowLevelPrint {
 	Font TAGLINE_FONT = new Font(FONT_FAMILY, FONT_STYLE_PLAIN, FONT_SIZE - 3);
 	Font ADDRESS_FONT = new Font(FONT_FAMILY, FONT_STYLE_PLAIN, FONT_SIZE - 1);
 	int pointer;
-
 	BillPrint printObj;
 
 	/**
@@ -47,17 +45,28 @@ public class LowLevelPrint {
 	 * @throws BusinessException
 	 */
 	public void actualPrint(BillPrint print) throws BusinessException {
-
 		PrinterJob printJob = PrinterJob.getPrinterJob();
 		PageFormat pageFormat = printJob.defaultPage();
 		pageFormat.setOrientation(ORIENTATION);
 		Paper paper = pageFormat.getPaper();
+		//Set this based on the printable paper width
 		double width = fromCmToPpi(PAGE_WIDTH);
-		double height = paperHeight(print);
+		//Set this based on the items ordered
+		double height = calculatePaperHeight(print);
 		paper.setSize(width, height);
-		paper.setImageableArea(fromCmToPpi(0.25), fromCmToPpi(0.5), width - fromCmToPpi(0.35), height - fromCmToPpi(1));
+		//Below settings are used to providing the boxing for printable area on the bill
+		/*paper.setImageableArea(
+				fromCmToPpi(0.25),
+				fromCmToPpi(0.50),
+				width - fromCmToPpi(0.35),
+				height - fromCmToPpi(1));*/
+		/*paper.setImageableArea(0,
+				fromCmToPpi(0.50),
+				width, //0.35
+				height - fromCmToPpi(1));*/
 		pageFormat.setPaper(paper);
-		dumpPageFormat(pageFormat);
+		//Currently this below code is not being used
+		//dumpPageFormat(pageFormat);
 		printJob.setPrintable(new MyPrintable(), pageFormat);
 		printObj = print;
 		try {
@@ -69,22 +78,33 @@ public class LowLevelPrint {
 
 	/**
 	 * Calculates number of lines required for setting paper, considers only
-	 * header and footer lines
+	 * header, footer lines
 	 *
 	 * @param print
 	 * @return double
 	 */
-	private double paperHeight(BillPrint print) {
-		double pHeight = (10 * FONT_SIZE);
+	private double calculatePaperHeight(BillPrint print) {
+		// '10' is for leaving empty paper above the header and below the footer
+		double paperHeight = (10 * FONT_SIZE);
+		paperHeight = calculateOrderItemsHeight(print, paperHeight);
+		paperHeight = calculateHeaderFooterHeight(print, paperHeight);
+		return paperHeight;
+	}
+	
+	/**
+	 * Checks and returns number of lines required for order items
+	 *
+	 * @param print
+	 * @return double
+	 */
+	private double calculateOrderItemsHeight(BillPrint print, double paperHeight) {
 		if (print.getFnbItem() != null) {
-			pHeight = pHeight + print.getFnbItem().size() * FONT_SIZE + (13 * FONT_SIZE);
+			paperHeight = paperHeight + (print.getFnbItem().size() * FONT_SIZE) + (13 * FONT_SIZE);
 		}
 		if (print.getBarItem() != null) {
-			pHeight = pHeight + print.getBarItem().size() * FONT_SIZE + (13 * FONT_SIZE);
+			paperHeight = paperHeight + (print.getBarItem().size() * FONT_SIZE) + (13 * FONT_SIZE);
 		}
-		double headFoot = checkNulls(print);
-		pHeight = pHeight + headFoot * FONT_SIZE;
-		return pHeight;
+		return paperHeight;
 	}
 
 	/**
@@ -93,10 +113,9 @@ public class LowLevelPrint {
 	 * @param print
 	 * @return double
 	 */
-	private double checkNulls(BillPrint print) {
-
+	private double calculateHeaderFooterHeight(BillPrint print, double paperHeight) {
 		double count = 0;
-		RestaurantInfo info = print.getRestaurantInfo();
+		RestaurantInformation info = print.getRestaurantInfo();
 		if (StringUtils.isNotEmpty(info.getName())) {
 			count++;
 		}
@@ -121,11 +140,11 @@ public class LowLevelPrint {
 		if (StringUtils.isNotEmpty(info.getWishMessage())) {
 			count++;
 		}
-		return count;
+		return paperHeight + (count * FONT_SIZE);
 	}
 
 	/*
-	 * Convert CM to PPI
+	 * Convert CM(Centimeter) to PPI (Pixels Per Inch)
 	 */
 	private double fromCmToPpi(double cm) {
 		return toPPI(cm * 0.393700787);
@@ -135,8 +154,9 @@ public class LowLevelPrint {
 		return inch * 72d;
 	}
 
-	String dumpPageFormat(PageFormat pf) {
-		Paper paper = pf.getPaper();
+	//Currently this method is not being used
+	/*private String dumpPageFormat(PageFormat pageFormat) {
+		Paper paper = pageFormat.getPaper();
 		return dumpPaper(paper);
 	}
 
@@ -146,10 +166,9 @@ public class LowLevelPrint {
 				.append("x").append(paper.getImageableY()).append(" - ").append(paper.getImageableWidth()).append("x")
 				.append(paper.getImageableHeight());
 		return sb.toString();
-	}
+	}*/
 
 	public class MyPrintable implements Printable {
-
 		@Override
 		public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
 			int result = NO_SUCH_PAGE;
@@ -160,16 +179,17 @@ public class LowLevelPrint {
 				int width = (int) pageFormat.getImageableWidth();
 				int height = (int) pageFormat.getImageableHeight();
 				pen.translate((int) pageFormat.getImageableX(), (int) pageFormat.getImageableY());
-
 				Rectangle border = new Rectangle(1, 1, width - 1, height - 1);
-				// TODO: Change this line for printing borders
-				pen.draw(border);
+				//Change this line for printing borders
+				//pen.draw(border);
 				FontMetrics metrics = pen.getFontMetrics();
 				pointer = metrics.getAscent();
 				drawHeader(pen, border);
 				pen.setFont(FONT_PLAIN);
 				lineSeperator(pen);
 				drawOrderDetails(pen, border);
+				lineSeperator(pen);
+				drawSerialNoandTinNo(printObj, pen, border);
 				lineSeperator(pen);
 				drawItemsDescription(printObj, pen, border);
 				lineSeperator(pen);
@@ -183,7 +203,7 @@ public class LowLevelPrint {
 				}
 
 				if (printObj.getFnbItem() != null && printObj.getBarItem() != null) {
-					pen.drawString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = ", START_POS, pointer);
+					pen.drawString("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =", START_POS, pointer);
 					getPointerPosition();
 				}
 
@@ -195,8 +215,6 @@ public class LowLevelPrint {
 					drawBarAmountdetails(printObj, pen, border, metrics);
 				}
 
-				lineSeperator(pen);
-				drawSrandTin(printObj, pen, border);
 				lineSeperator(pen);
 
 				if (printObj.getFnbItem() != null && printObj.getBarItem() != null) {
@@ -218,7 +236,7 @@ public class LowLevelPrint {
 		 * @param rect
 		 * @return
 		 */
-		private void drawSrandTin(BillPrint printObj, Graphics2D pen, Rectangle rect) {
+		private void drawSerialNoandTinNo(BillPrint printObj, Graphics2D pen, Rectangle rect) {
 			OrderMeta orderMeta = printObj.getOrderMeta();
 			OrderDetails orderDetails = printObj.getOrderDetails();
 			pen.drawString(orderMeta.getSrNo(), START_POS, pointer);
@@ -241,7 +259,7 @@ public class LowLevelPrint {
 		 * @return
 		 */
 		private int drawHeader(Graphics2D pen, Rectangle border) {
-			RestaurantInfo info = printObj.getRestaurantInfo();
+			RestaurantInformation info = printObj.getRestaurantInfo();
 			if (StringUtils.isNotEmpty(info.getName())) {
 				alignToCenter(pen, info.getName(), border, TITLE_FONT);
 			}
@@ -276,12 +294,12 @@ public class LowLevelPrint {
 		 * @return
 		 */
 		private void lineSeperator(Graphics2D pen) {
-			pen.drawString("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", START_POS, pointer);
+			pen.drawString("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", START_POS, pointer);
 			getPointerPosition();
 		}
 
 		/**
-		 * Draws Order details object
+		 * Draws Order details
 		 *
 		 * @param printObj
 		 * @param pen
@@ -315,7 +333,6 @@ public class LowLevelPrint {
 			pen.drawString(meta.getCovers(), ((rect.width / 4) * 2) + idealspace, pointer);
 			pen.drawString(":", ((rect.width / 4) * 3) + idealspace - 5, pointer);
 			pen.drawString(detail.getCovers(), ((rect.width / 4) * 3) + idealspace, pointer);
-
 			getPointerPosition();
 		}
 
@@ -327,7 +344,6 @@ public class LowLevelPrint {
 		 * @param rect
 		 */
 		private void drawItemsDescription(BillPrint printObj, Graphics2D pen, Rectangle rect) {
-
 			ItemsMeta meta = printObj.getItemsMetaData();
 			int area = rect.width / 10;
 			pen.drawString(meta.getHeading1(), area * 2, pointer);
@@ -412,11 +428,9 @@ public class LowLevelPrint {
 			lineSeperator(pen);
 			pen.setFont(FONT_BOLD);
 			pen.drawString(fbAmountMeta.getTotalAmountMeta(), START_POS + idealspace, pointer);
-			pen.drawString(fbAmount.getTotalAmount(), rect.width - metrics.stringWidth(fbAmount.getTotalAmount()),
-					pointer);
-
+			pen.drawString(fbAmount.getTotalAmount(), 
+					rect.width - metrics.stringWidth(fbAmount.getTotalAmount()), pointer);
 			pen.setFont(FONT_PLAIN);
-
 			getPointerPosition();
 		}
 
@@ -448,7 +462,6 @@ public class LowLevelPrint {
 			pen.drawString(barAmountMeta.getBarTotal(), START_POS + idealspace, pointer);
 			pen.drawString(barAmount.getBarTotal(), rect.width - metrics.stringWidth(barAmount.getBarTotal()), pointer);
 			pen.setFont(FONT_PLAIN);
-			// pointer = drawStar(pen, pointer);
 			getPointerPosition();
 		}
 
@@ -457,17 +470,15 @@ public class LowLevelPrint {
 			OrderDetails orderDetails = printObj.getOrderDetails();
 			int idealspace = 20;
 			pen.setFont(FONT_BOLD);
-
 			pen.drawString(orderMeta.getGrandTotal(), START_POS + idealspace, pointer);
 			pen.setFont(TITLE_FONT);
 			pen.drawString(orderDetails.getGrandTotal(), rect.width / 2 + idealspace, pointer);
 			pen.setFont(FONT_PLAIN);
-
 			getPointerPosition();
 		}
 
 		private int drawFooter(BillPrint printObj, Graphics2D pen, Rectangle rect) {
-			RestaurantInfo restaurantInfo = printObj.getRestaurantInfo();
+			RestaurantInformation restaurantInfo = printObj.getRestaurantInfo();
 			if (StringUtils.isNotEmpty(printObj.getRestaurantInfo().getCompanyName())) {
 				alignToCenter(pen, restaurantInfo.getCompanyName(), rect, TAGLINE_FONT);
 			}
@@ -477,17 +488,7 @@ public class LowLevelPrint {
 			return pointer;
 		}
 
-		/**
-		 * Returns pointer location
-		 *
-		 * @param pointerVal
-		 * @return
-		 */
-		private void getPointerPosition() {
-			pointer = pointer + FONT_SIZE;
-		}
-
-		public void alignToCenter(Graphics pen, String text, Rectangle rect, Font font) {
+		private void alignToCenter(Graphics pen, String text, Rectangle rect, Font font) {
 			FontMetrics metrics = pen.getFontMetrics(font);
 			int x = (rect.width - metrics.stringWidth(text)) / 2;
 			pen.setFont(font);
@@ -495,6 +496,11 @@ public class LowLevelPrint {
 			getPointerPosition();
 		}
 
+		/**
+		 * Returns pointer location
+		 */
+		private void getPointerPosition() {
+			pointer = pointer + FONT_SIZE;
+		}
 	}
-
 }

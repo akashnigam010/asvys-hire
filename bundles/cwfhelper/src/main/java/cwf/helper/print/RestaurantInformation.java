@@ -1,6 +1,6 @@
 package cwf.helper.print;
 
-public class RestaurantInfo {
+public class RestaurantInformation {
 	private String name;
 	private String title;
 	private String AddressLine1;
@@ -57,7 +57,7 @@ public class RestaurantInfo {
 	public void setWishMessage(String wishMessage) {
 		this.wishMessage = wishMessage;
 	}
-	public RestaurantInfo(String name, String title, String addressLine1, String addressLine2, String addressLine3,
+	public RestaurantInformation(String name, String title, String addressLine1, String addressLine2, String addressLine3,
 			String contactNo, String companyName, String wishMessage) {
 		super();
 		this.name = name;

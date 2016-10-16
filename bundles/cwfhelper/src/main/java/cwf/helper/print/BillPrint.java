@@ -3,7 +3,7 @@ package cwf.helper.print;
 import java.util.List;
 
 public class BillPrint {
-	private RestaurantInfo restaurantInfo;
+	private RestaurantInformation restaurantInfo;
 	private OrderMeta orderMeta;
 	private OrderDetails orderDetails;
 	private ItemsMeta itemsMetaData;
@@ -14,11 +14,11 @@ public class BillPrint {
 	private BarAmount barAmount;
 	private BarAmountMeta barAmountMeta;
 
-	public RestaurantInfo getRestaurantInfo() {
+	public RestaurantInformation getRestaurantInfo() {
 		return restaurantInfo;
 	}
 
-	public void setRestaurantInfo(RestaurantInfo restaurantInfo) {
+	public void setRestaurantInfo(RestaurantInformation restaurantInfo) {
 		this.restaurantInfo = restaurantInfo;
 	}
 
@@ -98,7 +98,7 @@ public class BillPrint {
 		super();
 	}
 
-	public BillPrint(RestaurantInfo restaurantInfo, OrderMeta orderMeta, OrderDetails orderDetails,
+	public BillPrint(RestaurantInformation restaurantInfo, OrderMeta orderMeta, OrderDetails orderDetails,
 			ItemsMeta itemsMetaData, List<FnBItem> fnbItem, FnBAmount fnbAmount, FnBAmountMeta fnbAmountMeta,
 			List<BarItem> barItem, BarAmount barAmount, BarAmountMeta barAmountMeta) {
 		super();

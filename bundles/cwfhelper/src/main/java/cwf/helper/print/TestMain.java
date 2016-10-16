@@ -3,7 +3,6 @@ package cwf.helper.print;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cwf.helper.exception.BusinessException;
@@ -11,12 +10,12 @@ import cwf.helper.exception.BusinessException;
 @Component
 public class TestMain {
 
-	@Autowired
-	LowLevelPrint lowLevelPrint;
+	//@Autowired
+	//LowLevelPrint lowLevelPrint;
 
-	public void main() throws BusinessException {
-
-		RestaurantInfo restaurantInfo = new RestaurantInfo("FIREWATER", "(KITCHEN&BAR)",
+	public static void main(String args[]) throws BusinessException {
+		LowLevelPrint lowLevelPrint = new LowLevelPrint();
+		RestaurantInformation restaurantInformation = new RestaurantInformation("FIREWATER", "(KITCHEN&BAR)",
 				"5th Floor&Terrace, Phoneix Tower A", "Opp Trident Hotel,Hitech City", "Madhapur,Hyderabad-500081",
 				"PH No: 040-2001-2001", "Developed by Whitebay Solutions PVT Ltd", "THANK YOU ... VISIT AGAIN");
 
@@ -37,8 +36,8 @@ public class TestMain {
 		fnbItem.add(new FnBItem("Hot&Sour vegetarian soup", "2", "20000.00"));
 		fnbItem.add(new FnBItem("Rice", "1", "100.00"));
 		fnbItem.add(new FnBItem("Chicken Dum Biryani", "2", "460.00"));
-		FnBAmountMeta fnbAmountMeta = new FnBAmountMeta("sub Total", "SCH 7.0 %", "STX 5.80 %", "VAT 14.50%",
-				"Total Amt");
+		FnBAmountMeta fnbAmountMeta = new FnBAmountMeta("FnB Sub Total", "SCH 7.0 %", "STX 5.80 %", "VAT 14.50%",
+				"FnB Total");
 		FnBAmount fnbAmount = new FnBAmount("2155.00", "150.85", "133.71", "288.90", "2728.00");
 
 		// Bar Details
@@ -49,11 +48,11 @@ public class TestMain {
 		barItem.add(new BarItem("baritem3", "3", "2000"));
 		barItem.add(new BarItem("baritem4", "1", "450"));
 		barItem.add(new BarItem("baritem5", "1", "300"));
-		BarAmountMeta barAmountMeta = new BarAmountMeta("Sub Total", "SCH 7.0 %", "Total(Exc.Taxes) 3.07%", "GST 2.89%",
+		BarAmountMeta barAmountMeta = new BarAmountMeta("Bar Sub Total", "SCH 7.0 %", "Total(Exc.Taxes) 3.07%", "GST 2.89%",
 				"Bar Total");
 		BarAmount barAmount = new BarAmount("1500.00", "30.00", "330.00", "59.40", "1900.00");
 
-		BillPrint print = new BillPrint(restaurantInfo, orderMeta, orderDetails, itemsMetaData, fnbItem, fnbAmount,
+		BillPrint print = new BillPrint(restaurantInformation, orderMeta, orderDetails, itemsMetaData, fnbItem, fnbAmount,
 				fnbAmountMeta, barItem, barAmount, barAmountMeta);
 		lowLevelPrint.actualPrint(print);
 	}
