@@ -13,7 +13,8 @@ public class TestMain {
 	//@Autowired
 	//LowLevelPrint lowLevelPrint;
 
-	public static void main(String args[]) throws BusinessException {
+	//public static void main(String args[]) throws BusinessException {
+	public void print() throws BusinessException {
 		LowLevelPrint lowLevelPrint = new LowLevelPrint();
 		RestaurantInformation restaurantInformation = new RestaurantInformation("FIREWATER", "(KITCHEN&BAR)",
 				"5th Floor&Terrace, Phoneix Tower A", "Opp Trident Hotel,Hitech City", "Madhapur,Hyderabad-500081",
