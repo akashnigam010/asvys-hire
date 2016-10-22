@@ -49,4 +49,16 @@ public class CwfClockImpl implements CwfClock {
 	public Date getCurrentDate() {
 		return cal().getTime();
 	}
+
+	@Override
+	public String formatDateToDDMMYYYY(Date date) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormatType.DD_MM_YYYY.getByFormat());
+		return dateFormat.format(date);
+	}
+
+	@Override
+	public String getTimeAsHHMMAMPM(Date date) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormatType.HH_MM_AM_PM.getByFormat());
+		return dateFormat.format(date);
+	}
 }

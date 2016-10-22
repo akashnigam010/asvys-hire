@@ -18,4 +18,6 @@ public interface CwfClock {
 	Calendar cal(TimeZone timeZone, Locale locale);
 	String getCurrentDateTime();
 	Date getCurrentDate();
+	String formatDateToDDMMYYYY(Date date);
+	String getTimeAsHHMMAMPM(Date date);
 }
